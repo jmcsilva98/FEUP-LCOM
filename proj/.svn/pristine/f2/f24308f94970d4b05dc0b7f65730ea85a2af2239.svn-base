@@ -1,0 +1,281 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "game.h"
+#include "keyboard.h"
+#include "graphics.h"
+#include "video_gr.h"
+#include "i8042.h"
+#include "video_gr.h"
+#include "gamestates.h"
+#include "matrix.h"
+#include "highscores.h"
+
+Bubble * m[50][12];
+
+Game * startGame(){
+
+  Game * ColourPop = (Game*) malloc(sizeof(Game));
+  ColourPop->cursor = loadBitmap("/home/lcom/proj/res/cursor.bmp");
+
+  ColourPop->irq_set_timer = timer_subscribe_int();
+  ColourPop-> irq_set_kb =subscribe_kb(&hook_id_kb);
+  ColourPop-> irq_set_mouse = subscribe_mouse(&hook_id_mouse);
+  ColourPop->irq_set_rtc = subscribe_rtc(&hook_id_rtc);
+
+  SetInterrupts();
+
+  ColourPop->scancode = 0;
+  ColourPop->done = 0;
+  ColourPop->t_counter = 0;
+  ColourPop->rows = 0;
+
+  ColourPop->name[0] = 0;
+  ColourPop->name[1] = 0;
+  ColourPop->name[2] = 0;
+  ColourPop->name[3] = 0;
+  ColourPop->name[4] = 0;
+  ColourPop->high_score_1 = (High_Score*) malloc(sizeof(High_Score));
+  ColourPop->high_score_1->date = (Date*) malloc(sizeof(Date));
+  ColourPop->high_score_1->name[0] = 0;
+  ColourPop->high_score_1->name[1] = 0;
+  ColourPop->high_score_1->name[2] = 0;
+  ColourPop->high_score_1->name[3] = 0;
+  ColourPop->high_score_1->name[4] = 0;
+  ColourPop->high_score_2 = (High_Score*) malloc(sizeof(High_Score));
+  ColourPop->high_score_2->date = (Date*) malloc(sizeof(Date));
+  ColourPop->high_score_2->name[0] = 0;
+  ColourPop->high_score_2->name[1] = 0;
+  ColourPop->high_score_2->name[2] = 0;
+  ColourPop->high_score_2->name[3] = 0;
+  ColourPop->high_score_2->name[4] = 0;
+  ColourPop->high_score_3 = (High_Score*) malloc(sizeof(High_Score));
+  ColourPop->high_score_3->date = (Date*) malloc(sizeof(Date));
+  ColourPop->high_score_3->name[0] = 0;
+  ColourPop->high_score_3->name[1] = 0;
+  ColourPop->high_score_3->name[2] = 0;
+  ColourPop->high_score_3->name[3] = 0;
+  ColourPop->high_score_3->name[4] = 0;
+
+
+  ColourPop->menu = loadBitmap("/home/lcom/proj/res/menu.bmp");
+  ColourPop->gameOverMenu = loadBitmap("/home/lcom/proj/res/gameover.bmp");
+  ColourPop->highScoresMenu = loadBitmap("/home/lcom/proj/res/highscores.bmp");
+  ColourPop->pausedMenu = loadBitmap("/home/lcom/proj/res/paused.bmp");
+  ColourPop->playingBackground = loadBitmap("/home/lcom/proj/res/frame.bmp");
+  ColourPop->enterNameMenu = loadBitmap("/home/lcom/proj/res/entername.bmp");
+  ColourPop->limitBar = loadBitmap("/home/lcom/proj/res/bar.bmp");
+  ColourPop->spear = getSpear()->s0;
+  ColourPop->tunel = loadBitmap("/home/lcom/proj/res/tunel.bmp");
+  ColourPop->throwingBubble = generateBubble(486,618);
+  ColourPop->nextBubble = generateBubble(286,574);
+
+  ColourPop->n0 =  loadBitmap("/home/lcom/proj/res/0.bmp");
+  ColourPop->n1 =  loadBitmap("/home/lcom/proj/res/1.bmp");
+  ColourPop->n2 =  loadBitmap("/home/lcom/proj/res/2.bmp");
+  ColourPop->n3 =  loadBitmap("/home/lcom/proj/res/3.bmp");
+  ColourPop->n4 =  loadBitmap("/home/lcom/proj/res/4.bmp");
+  ColourPop->n5 =  loadBitmap("/home/lcom/proj/res/5.bmp");
+  ColourPop->n6 =  loadBitmap("/home/lcom/proj/res/6.bmp");
+  ColourPop->n7 =  loadBitmap("/home/lcom/proj/res/7.bmp");
+  ColourPop->n8 =  loadBitmap("/home/lcom/proj/res/8.bmp");
+  ColourPop->n9 =  loadBitmap("/home/lcom/proj/res/9.bmp");
+
+  ColourPop->a =  loadBitmap("/home/lcom/proj/res/a.bmp");
+  ColourPop->b =  loadBitmap("/home/lcom/proj/res/b.bmp");
+  ColourPop->c =  loadBitmap("/home/lcom/proj/res/c.bmp");
+  ColourPop->d =  loadBitmap("/home/lcom/proj/res/d.bmp");
+  ColourPop->e =  loadBitmap("/home/lcom/proj/res/e.bmp");
+  ColourPop->f =  loadBitmap("/home/lcom/proj/res/f.bmp");
+  ColourPop->g =  loadBitmap("/home/lcom/proj/res/g.bmp");
+  ColourPop->h =  loadBitmap("/home/lcom/proj/res/h.bmp");
+  ColourPop->i =  loadBitmap("/home/lcom/proj/res/i.bmp");
+  ColourPop->j =  loadBitmap("/home/lcom/proj/res/j.bmp");
+  ColourPop->k =  loadBitmap("/home/lcom/proj/res/k.bmp");
+  ColourPop->l =  loadBitmap("/home/lcom/proj/res/l.bmp");
+  ColourPop->m =  loadBitmap("/home/lcom/proj/res/m.bmp");
+  ColourPop->n =  loadBitmap("/home/lcom/proj/res/n.bmp");
+  ColourPop->o =  loadBitmap("/home/lcom/proj/res/o.bmp");
+  ColourPop->p =  loadBitmap("/home/lcom/proj/res/p.bmp");
+  ColourPop->q =  loadBitmap("/home/lcom/proj/res/q.bmp");
+  ColourPop->r =  loadBitmap("/home/lcom/proj/res/r.bmp");
+  ColourPop->s =  loadBitmap("/home/lcom/proj/res/s.bmp");
+  ColourPop->t =  loadBitmap("/home/lcom/proj/res/t.bmp");
+  ColourPop->u =  loadBitmap("/home/lcom/proj/res/u.bmp");
+  ColourPop->w =  loadBitmap("/home/lcom/proj/res/w.bmp");
+  ColourPop->v =  loadBitmap("/home/lcom/proj/res/v.bmp");
+  ColourPop->x =  loadBitmap("/home/lcom/proj/res/x.bmp");
+  ColourPop->y =  loadBitmap("/home/lcom/proj/res/y.bmp");
+  ColourPop->z =  loadBitmap("/home/lcom/proj/res/z.bmp");
+
+  ColourPop->dash =  loadBitmap("/home/lcom/proj/res/dash.bmp");
+  ColourPop->colon = loadBitmap("/home/lcom/proj/res/colon.bmp");
+  ColourPop->score_bitmap = loadBitmap("/home/lcom/proj/res/score.bmp");
+
+  ColourPop->date = newDate();
+  readHighscores(ColourPop);
+  allocateInitialMatrix(ColourPop);
+  return ColourPop;
+}
+
+
+int interrupt_h(Game * ColourPop){
+  message msg;
+	int ipc_status, r;
+
+	/* subscribing timer and keyboard */
+	if (ColourPop->irq_set_timer == -1) {
+		printf("Error in timer_subscribe_int!\n");
+		return 1;}
+
+	if (ColourPop->irq_set_kb == -1) {
+		printf("Error subscribing the keyboard.\n");
+		return 1;}
+
+  if (ColourPop->irq_set_rtc == -1) {
+  	printf("Error subscribing the rtc.\n");
+  	return 1;}
+
+  //disable_mouse();
+  enable_sMode();
+  enable_packets();
+
+	while (getStateMachine()->currentState!=DONE) { //get a request message
+
+		r = driver_receive(ANY, &msg, &ipc_status);
+
+		if (r != 0) {
+			printf("driver_receive failed with: %d", r);
+			continue;}
+
+
+		if (is_ipc_notify(ipc_status)) {
+			switch (_ENDPOINT_P(msg.m_source)) {
+
+			case HARDWARE:    //hardware interrupt notification
+				if (msg.NOTIFY_ARG & ColourPop->irq_set_timer) {
+          timer_int_handler(ColourPop);
+          check_timer_events(ColourPop);
+          flipBuffer();
+        }
+
+				if (msg.NOTIFY_ARG & ColourPop->irq_set_kb) {
+          //kbc_handler_asm(ColourPop);
+          //kbc_handler_c(ColourPop);
+          kbc_handler(ColourPop, 1); //if 2nd parameter 0, is in c if 1 is in assembly
+          check_keyboard_events(ColourPop);
+        }
+
+        if (msg.NOTIFY_ARG & ColourPop->irq_set_mouse) {
+          mouse_h(ColourPop);
+      		check_mouse_events(ColourPop);
+        }
+
+        if (msg.NOTIFY_ARG & ColourPop->irq_set_rtc) {
+          updateDate(ColourPop->date);
+          updateHour(ColourPop->date);
+        }
+
+				break;
+			}
+		}
+    check_game_state();
+    check_throwing_bubble_state();
+  }
+
+	if (timer_unsubscribe_int() == 1) {
+		printf("Error in timer_unsubscribe_int!\n");
+		return 1;}
+
+	if (unsubscribe_kb(&hook_id_kb) != OK) {
+		printf("Error unsubscribing the keyboard\n");
+		return 1;}
+
+  unsubscribe_mouse(&hook_id_mouse);
+
+  unsubscribe_rtc();
+  readOutBuffer();
+  freeGame(ColourPop);
+	return 0;
+}
+
+
+void freeGame(Game * ColourPop){
+  deleteMouse();
+  freeMatrix(ColourPop);
+  deleteBubble(ColourPop->throwingBubble);
+  deleteBubble(ColourPop->nextBubble);
+  freeDate(ColourPop->date);
+  free(ColourPop);
+}
+
+
+void checkIfLost(Game * ColourPop){
+  unsigned int i;
+
+  if(ColourPop->rows > N_ROWS_MAX){
+    getStateMachine()->event = LINE_OVER_BAR;
+
+  if(ColourPop->score > ColourPop->high_score_1->score){
+
+    ColourPop->gameOverMenu = loadBitmap("/home/lcom/proj/res/gameover2.bmp");
+    ColourPop->high_score_3->score = ColourPop->high_score_2->score;
+    ColourPop->high_score_3->date->dayOfMonth = ColourPop->high_score_2->score;
+    ColourPop->high_score_3->date->month = ColourPop->high_score_2->score;
+    ColourPop->high_score_3->date->year = ColourPop->high_score_2->score;
+    ColourPop->high_score_2->score = ColourPop->high_score_1->score;
+    ColourPop->high_score_2->date->dayOfMonth = ColourPop->high_score_1->score;
+    ColourPop->high_score_2->date->month = ColourPop->high_score_1->score;
+    ColourPop->high_score_2->date->year = ColourPop->high_score_1->score;
+    ColourPop->high_score_1->score = ColourPop->score;
+    ColourPop->high_score_1->date = ColourPop->date;
+    for (i = 0; i < 5; i++) {
+      ColourPop->high_score_1->name[i] = ColourPop->name[i];
+    }
+    writeHighscores(ColourPop);
+    return;
+
+  }else if(ColourPop->score > ColourPop->high_score_2->score){
+
+    ColourPop->gameOverMenu =  loadBitmap("/home/lcom/proj/res/gameover.bmp");
+    ColourPop->high_score_3->score = ColourPop->high_score_2->score;
+    ColourPop->high_score_3->date->dayOfMonth = ColourPop->high_score_2->score;
+    ColourPop->high_score_3->date->month = ColourPop->high_score_2->score;
+    ColourPop->high_score_3->date->year = ColourPop->high_score_2->score;
+    ColourPop->high_score_2->score = ColourPop->score;
+    ColourPop->high_score_2->date = ColourPop->date;
+    for (i = 0; i < 5; i++) {
+      ColourPop->high_score_2->name[i] = ColourPop->name[i];
+    }
+    writeHighscores(ColourPop);
+    return;
+
+  }else if (ColourPop->score > ColourPop->high_score_3->score){
+
+    ColourPop->gameOverMenu =  loadBitmap("/home/lcom/proj/res/gameover.bmp");
+    ColourPop->high_score_3->score = ColourPop->score;
+    ColourPop->high_score_3->date = ColourPop->date;
+    for (i = 0; i < 5; i++) {
+      ColourPop->high_score_3->name[i] = ColourPop->name[i];
+    }
+    writeHighscores(ColourPop);
+    return;
+  }
+  }
+}
+
+
+void playAgain(Game * ColourPop){
+  unsigned int i;
+
+  ColourPop->throwingBubble = generateBubble(ColourPop->throwingBubble->leftLimit, ColourPop->throwingBubble->upperLimit);
+  ColourPop->score = 0;
+  ColourPop->rows = 0;
+
+  for ( i = 0; i < 4; i++) {
+    ColourPop->name[i]= 0;
+  }
+
+  freeMatrix(ColourPop);
+  allocateInitialMatrix(ColourPop);
+  getStateMachine()->currentState = PLAY_MODE;
+}
